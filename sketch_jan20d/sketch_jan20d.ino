@@ -118,13 +118,13 @@ void DisplayHz(double Hz) {
 
   display.setCursor(0,0);
 
-  display.fillRect(50, 30, 78, 4, WHITE); // Linjen mellem tallene
+  display.fillRect(40, 30, 78, 4, WHITE); // Linjen mellem tallene
 
-  display.setTextSize(1); // Indstil tekststørrelsen
+  display.setTextSize(2); // Indstil tekststørrelsen
 
-  display.setCursor(50,10);
+  display.setCursor(40,10);
   display.println(Hz);
   
-  display.setCursor(50,40);
+  display.setCursor(40,40);
   display.println(ClosestNote);
 }
