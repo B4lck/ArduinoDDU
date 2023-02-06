@@ -2,7 +2,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <arduinoFFT.h>
+#include "arduinoFFT.h"
 
 #include <map>
 #include <string>
@@ -23,6 +23,16 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT,
   OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
 
 #define MIK_IN 0
+#define SAMPLES 64
+#define SAMPLING_FREQUENCY 8196
+
+arduinoFFT FFT = arduinoFFT();
+
+unsigned int samplingPeriode;
+unsigned long MicroSeconds;
+
+double vReal[SAMPLES]; //create vector of size SAMPLES to hold real values
+double vImag[SAMPLES]; //create vector of size SAMPLES to hold imaginary values
 
 void DisplayNote(char Note) {
   display.setTextSize(5); // Indstil skriftstørrelse til 5px
@@ -32,19 +42,19 @@ void DisplayNote(char Note) {
 
 double GetClosestNoteFromHz(double Hz) {
   //Noter
-  std::map<char, std::array<double, 8>> Notes; // Et map over alle noder og deres frekvens
-  Notes['C'] = {16.35,  32.70,  65.41,  130.81, 261.63, 523.25, 1046.60, 2093.00};
-  Notes['c'] = {17.32,  34.65,  69.30,  138.59, 277.18, 554.37, 1108.73, 2217.46};
-  Notes['D'] = {18.35,  36.71,  73.42,  146.83, 273.66, 587.33, 1174.66, 2349.32};
-  Notes['d'] = {19.45,  38.89,  77.78,  155.56, 311.13, 622.25, 1244.51, 2217.46};
-  Notes['E'] = {20.60,  41.20,  82.41,  164.81, 329.53, 659.25, 1318.51, 2637.02};
-  Notes['F'] = {21.83,  43.65,  87.31,  174.61, 349.23, 698.46, 1396.91, 2793.83};
-  Notes['f'] = {23.12,  46.25,  92.50,  185.00, 369.99, 739.99, 1479.98, 2959.96};
-  Notes['G'] = {24.50,  49.00,  98.00,  196.00, 392.00, 783.99, 1567.98, 3135.96};
-  Notes['g'] = {25.96,  51.91,  103.83, 207.65, 415.30, 830.61, 1661.22, 3322.44};
-  Notes['A'] = {27.50,  55.00,  110.00, 220.00, 440.00, 880.00, 1760.00, 3520.00};
-  Notes['a'] = {29.14,  58.27,  116.54, 233.08, 466.16, 932.33, 1864.66, 3729.31};
-  Notes['B'] = {30.87,  61.74,  123.47, 246.94, 492.88, 987.77, 1975.53, 3951.07};
+std::map<char, std::array<double, 8>> Notes; // Et map over alle noder og deres frekvens
+Notes['C'] = {16.35,  32.70,  65.41,  130.81, 261.63, 523.25, 1046.60, 2093.00};
+Notes['c'] = {17.32,  34.65,  69.30,  138.59, 277.18, 554.37, 1108.73, 2217.46};
+Notes['D'] = {18.35,  36.71,  73.42,  146.83, 273.66, 587.33, 1174.66, 2349.32};
+Notes['d'] = {19.45,  38.89,  77.78,  155.56, 311.13, 622.25, 1244.51, 2217.46};
+Notes['E'] = {20.60,  41.20,  82.41,  164.81, 329.53, 659.25, 1318.51, 2637.02};
+Notes['F'] = {21.83,  43.65,  87.31,  174.61, 349.23, 698.46, 1396.91, 2793.83};
+Notes['f'] = {23.12,  46.25,  92.50,  185.00, 369.99, 739.99, 1479.98, 2959.96};
+Notes['G'] = {24.50,  49.00,  98.00,  196.00, 392.00, 783.99, 1567.98, 3135.96};
+Notes['g'] = {25.96,  51.91,  103.83, 207.65, 415.30, 830.61, 1661.22, 3322.44};
+Notes['A'] = {27.50,  55.00,  110.00, 220.00, 440.00, 880.00, 1760.00, 3520.00};
+Notes['a'] = {29.14,  58.27,  116.54, 233.08, 466.16, 932.33, 1864.66, 3729.31};
+Notes['B'] = {30.87,  61.74,  123.47, 246.94, 492.88, 987.77, 1975.53, 3951.07};
 
   double ClosestNote = Notes['C'][4]; // Standarden bliver sat til noden C4
   char NoteLetter;                    // Nodens bogstav. 
@@ -77,16 +87,40 @@ void setup() {
 
   //Lyd
   pinMode(MIK_IN, INPUT);
+  samplingPeriode = round(1000000*(1.0/SAMPLING_FREQUENCY));
+  
 }
 
-double hz = 50;
+double hz = 430;
 void loop() {
-  hz += 1;
+  //Lyd
+  for (int i = 0; i < SAMPLES; i++) {
+    MicroSeconds = micros();
+
+    vReal[i] = analogRead(MIK_IN);
+    vImag[i] = 0;
+
+    while (micros() < (MicroSeconds + samplingPeriode)) {
+        //Ingenting
+    }
+  }
+
+  FFT.Windowing(vReal, SAMPLES, FFT_WIN_TYP_HAMMING, FFT_FORWARD);
+  FFT.Compute(vReal, vImag, SAMPLES, FFT_FORWARD);
+  FFT.ComplexToMagnitude(vReal, vImag, SAMPLES);
+
+  double Peak = FFT.MajorPeak(vReal, SAMPLES, SAMPLING_FREQUENCY);
+  Serial.println(analogRead(MIK_IN));
+  if (analogRead(MIK_IN) < 2500) {
+    hz = Peak;
+  } else {
+    hz = 0;
+  }
+
+  //Skærm
   display.clearDisplay();
   DisplayHz(hz);
   display.display();
-
-  Serial.println(analogRead(MIK_IN), DEC);
 }
 
 
