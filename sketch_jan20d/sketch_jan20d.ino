@@ -29,7 +29,7 @@ void DisplayNote(char Note, bool Close) {
   display.setCursor(0,0); // Indstil skriv positionen
   display.println(Note); // Skriv hvilken node det er
   unsigned char closeChar = Close ? '✓' : 'X';
-  display.drawChar(5,40,closeChar, WHITE, 0, 3);
+  display.drawLine(5,40,10,50,WHITE);
 }
 
 double GetClosestNoteFromHz(double Hz) {
