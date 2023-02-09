@@ -28,10 +28,8 @@ void DisplayNote(char Note, bool Close) {
   display.setTextSize(5); // Indstil skriftstørrelse til 5px
   display.setCursor(0,0); // Indstil skriv positionen
   display.println(Note); // Skriv hvilken node det er
-  char closeChar = Close ? 'K' : 'X';
-  display.setCursor(5, 40);
-  display.setTextSize(3);
-  display.println(closeChar);
+  unsigned char closeChar = Close ? '✓' : 'X';
+  display.drawChar(5,40,closeChar, WHITE, 0, 3);
 }
 
 double GetClosestNoteFromHz(double Hz) {
