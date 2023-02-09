@@ -2,7 +2,6 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <arduinoFFT.h>
 
 #include <map>
 #include <string>
@@ -19,15 +18,20 @@
 #define OLED_CS    17
 #define OLED_RESET 5
 
+#define Sensitivity 2
+
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT,
   OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
 
-#define MIK_IN 0
 
-void DisplayNote(char Note) {
+void DisplayNote(char Note, bool Close) {
   display.setTextSize(5); // Indstil skriftstørrelse til 5px
-  display.setCursor(0,10); // Indstil skriv positionen
-  display.println(Note); // Skriv hvilken
+  display.setCursor(0,0); // Indstil skriv positionen
+  display.println(Note); // Skriv hvilken node det er
+  char closeChar = Close ? 'K' : 'X';
+  display.setCursor(5, 40);
+  display.setTextSize(3);
+  display.println(closeChar);
 }
 
 double GetClosestNoteFromHz(double Hz) {
@@ -57,7 +61,8 @@ double GetClosestNoteFromHz(double Hz) {
       }
     }
   }
-  DisplayNote(NoteLetter); // Vis hvilken node der er tættest
+
+  DisplayNote(NoteLetter, abs(Hz - ClosestNote) < Sensitivity); // Vis hvilken node der er tættest
   return ClosestNote;      // Returner den tætteste frekvens
 }
 
@@ -74,26 +79,20 @@ void setup() {
   display.clearDisplay();
   testscrolltext();
   display.clearDisplay();
-
-  //Lyd
-  pinMode(MIK_IN, INPUT);
 }
 
-double hz = 50;
+double hz = 440.00;
 void loop() {
-  hz += 1;
+  //hz += 1;
   display.clearDisplay();
   DisplayHz(hz);
   display.display();
-
-  Serial.println(analogRead(MIK_IN), DEC);
 }
 
 
 void testscrolltext(void) {
 
   display.clearDisplay();
-
 
   display.setTextSize(2); // Draw 2X-scale text
 

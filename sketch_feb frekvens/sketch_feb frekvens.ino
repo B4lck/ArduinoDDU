@@ -111,7 +111,7 @@ void loop() {
 
   double Peak = FFT.MajorPeak(vReal, SAMPLES, SAMPLING_FREQUENCY);
   Serial.println(analogRead(MIK_IN));
-  if (analogRead(MIK_IN) < 2500) {
+  if (analogRead(MIK_IN) < 3000) {
     hz = Peak;
   } else {
     hz = 0;
