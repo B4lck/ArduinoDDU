@@ -24,12 +24,23 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT,
   OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
 
 
+void DrawCheckmark() {
+  display.drawLine(7 ,45,10,50,WHITE);
+  display.drawLine(10,50,10,47,WHITE);
+}
+
 void DisplayNote(char Note, bool Close) {
   display.setTextSize(5); // Indstil skriftstørrelse til 5px
   display.setCursor(0,0); // Indstil skriv positionen
   display.println(Note); // Skriv hvilken node det er
-  unsigned char closeChar = Close ? '✓' : 'X';
-  display.drawLine(5,40,10,50,WHITE);
+  
+  if (Close) {
+    DrawCheckmark();
+  } else {
+    display.setTextSize(3);
+    display.setCursor(5,40);
+    display.println('X');
+  }
 }
 
 double GetClosestNoteFromHz(double Hz) {
