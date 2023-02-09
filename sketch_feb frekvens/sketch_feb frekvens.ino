@@ -34,10 +34,23 @@ unsigned long MicroSeconds;
 double vReal[SAMPLES]; //create vector of size SAMPLES to hold real values
 double vImag[SAMPLES]; //create vector of size SAMPLES to hold imaginary values
 
-void DisplayNote(char Note) {
+void DrawCheckmark() { // Tegn to linjer som ligner et flueben
+  display.drawLine(7 ,45,10,50,WHITE);
+  display.drawLine(10,50,20,47,WHITE);
+}
+
+void DisplayNote(char Note, bool Close) {
   display.setTextSize(5); // Indstil skriftstørrelse til 5px
-  display.setCursor(0,10); // Indstil skriv positionen
-  display.println(Note); // Skriv hvilken
+  display.setCursor(0,0); // Indstil skriv positionen
+  display.println(Note); // Skriv hvilken node det er
+  
+  if (Close) { // Hvis frekvensen er inden for sensitivity radiusen
+    DrawCheckmark(); // Tegn flueben for at vise ja
+  } else { // Ellers tegn kryds
+    display.setTextSize(3);
+    display.setCursor(5,40);
+    display.println('X');
+  }
 }
 
 double GetClosestNoteFromHz(double Hz) {
@@ -67,8 +80,8 @@ Notes['B'] = {30.87,  61.74,  123.47, 246.94, 492.88, 987.77, 1975.53, 3951.07};
       }
     }
   }
-  DisplayNote(NoteLetter); // Vis hvilken node der er tættest
-  return ClosestNote;      // Returner den tætteste frekvens
+  DisplayNote(NoteLetter, abs(Hz - ClosestNote) < Sensitivity); // Vis hvilken node der er tættest & fortæl om frekvensen er inde for sensitivity radiusen.
+  return ClosestNote; // Returner den tætteste frekvens
 }
 
 
